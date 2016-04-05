@@ -13,25 +13,27 @@ import javax.print.PrintException;
 import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
 import javax.print.SimpleDoc;
+import com.example.myproject.PrintJobWatcher;
 
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 import javax.print.attribute.standard.Copies;
-
-import javax.print.event.PrintJobAdapter;
-import javax.print.event.PrintJobEvent;
-
-public class PrintTextFile {
+public class PrintTextFile{
 
   public static void main(String[] args) throws PrintException, IOException {
+	  
+	  final String LOC="C:/Users/rs14861/Desktop/java8_tutorial.pdf";
+	  
     String defaultPrinter =
       PrintServiceLookup.lookupDefaultPrintService().getName();
     System.out.println("Default printer: " + defaultPrinter);
 
     PrintService service = PrintServiceLookup.lookupDefaultPrintService();
 
-    FileInputStream in = new FileInputStream(new File("C:/Users/Murugan/Desktop/suma.one"));
-
+    FileInputStream in = new FileInputStream(new File(LOC));
+    
+    try{
+    	
     PrintRequestAttributeSet  pras = new HashPrintRequestAttributeSet();
     pras.add(new Copies(1));
 
@@ -42,7 +44,7 @@ public class PrintTextFile {
     DocPrintJob job = service.createPrintJob();
     PrintJobWatcher pjw = new PrintJobWatcher(job);
     job.print(doc, pras);
-    pjw.waitForDone();
+    //pjw.waitForDone();
     in.close();
 
     // send FF to eject the page
@@ -52,41 +54,8 @@ public class PrintTextFile {
     pjw = new PrintJobWatcher(jobff);
     jobff.print(docff, null);
     pjw.waitForDone();
-  }
-}
-
-class PrintJobWatcher {
-  boolean done = false;
-
-  PrintJobWatcher(DocPrintJob job) {
-    job.addPrintJobListener(new PrintJobAdapter() {
-      public void printJobCanceled(PrintJobEvent pje) {
-        allDone();
-      }
-      public void printJobCompleted(PrintJobEvent pje) {
-        allDone();
-      }
-      public void printJobFailed(PrintJobEvent pje) {
-        allDone();
-      }
-      public void printJobNoMoreEvents(PrintJobEvent pje) {
-        allDone();
-      }
-      void allDone() {
-        synchronized (PrintJobWatcher.this) {
-          done = true;
-          System.out.println("Printing done ...");
-          PrintJobWatcher.this.notify();
-        }
-      }
-    });
-  }
-  public synchronized void waitForDone() {
-    try {
-      while (!done) {
-        wait();
-      }
-    } catch (InterruptedException e) {
     }
+    catch(Exception e){ e.printStackTrace(); }
   }
 }
+
